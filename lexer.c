@@ -98,6 +98,7 @@ Token* tokenize(const char* code) {
         // Check for operators and end of line mark
         if (code[i] == '+' || code[i] == '-' || (code[i] == ':' && code[i + 1] == '=')) {
             if (code[i] == ':') {
+
                 tokens[tokenCount].lexeme[0] = code[i];
                 tokens[tokenCount].lexeme[1] = code[i + 1];
                 tokens[tokenCount].lexeme[2] = '\0';

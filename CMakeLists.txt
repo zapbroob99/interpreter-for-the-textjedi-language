@@ -3,4 +3,4 @@ project(textjedi_interpreter C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(textjedi_interpreter main.c lexer.c lexer.h)
+add_executable(textjedi_interpreter main.c lexer.c lexer.h parser.c parser.h symbol_table.c symbol_table.h)
