@@ -32,7 +32,7 @@ int main() {
 
     Token* tokens = tokenize(source_code);
     if (tokens != NULL) {
-       // printf("\nStarting Lexical Analysis\n\n");
+        printf("\nStarting Lexical Analysis\n\n");
         printTokens(tokens);
        printf("\nStarting Parsing...\n\n");
         parse(tokens);

@@ -117,15 +117,9 @@ void parseAssignment(Token* tokens, int* index, SymbolTable* symbolTable) {
 
             SymbolEntry* entry = lookupEntry(symbolTable, identifier);
 
-
             if (entry == NULL) {
                 error("Undefined variable.");
-            }
-
-
-
-
-            else if (strcmp(entry->type, INTEGER_TYPE) == 0) {
+            }      else if (strcmp(entry->type, INTEGER_TYPE) == 0) {
                 // Check if assigning to an integer variable
                 int value;
                 if (tokens[startIndex].type == INTEGER_CONSTANT) {
@@ -172,51 +166,87 @@ void parseAssignment(Token* tokens, int* index, SymbolTable* symbolTable) {
 
                 sprintf(entry->value, "%d", value);
                 printf("Assignment: %s := %d\n", identifier, value);
-            } else if (strcmp(entry->type, TEXT_TYPE) == 0) {
-                // Check if assigning to a text variable
-                if (tokens[startIndex].type == STRING_CONSTANT) {
-                    // Regular assignment with string constant
-                    strcpy(entry->value, expression);
-                } else if (tokens[startIndex].type == IDENTIFIER) {
-                    // Assignment with another text variable
-                    SymbolEntry* identifierEntry = lookupEntry(symbolTable, tokens[startIndex].lexeme);
-                    if (identifierEntry == NULL || strcmp(identifierEntry->type, TEXT_TYPE) != 0) {
-                        error("Invalid assignment to text variable. Expected string constant or text variable.");
-                    }
-                    strcpy(entry->value, identifierEntry->value);
-                } else {
-                    error("Invalid assignment to text variable. Expected string constant or text variable.");
-                }
-
-                // Check if subtraction operation is present
+            }else if (strcmp(entry->type, TEXT_TYPE) == 0) {
+                // Check if the expression contains string concatenation or subtraction
+                char* concatOperator = strstr(expression, "+");
                 char* subOperator = strstr(expression, "-");
-                if (subOperator != NULL) {
-                    // Extract the Minuend and Subtrahend
+
+                if (concatOperator != NULL && subOperator != NULL) {
+                    // Both concatenation and subtraction operators present, raise an error
+                    error("Invalid assignment. Both concatenation and subtraction operators cannot be used in the same expression.");
+                } else if (concatOperator != NULL) {
+                    // String concatenation
+                    // Extract the left operand and right operand
+                    char leftOperand[100] = "";
+                    char rightOperand[100] = "";
+                    strncpy(leftOperand, expression, concatOperator - expression);
+                    strcpy(rightOperand, concatOperator + 1);
+
+                    // Remove leading and trailing whitespace from both operands
+                    trim(leftOperand);
+                    trim(rightOperand);
+
+                    // Retrieve the value of the left operand (if it's a variable)
+                    SymbolEntry* leftOperandEntry = lookupEntry(symbolTable, leftOperand);
+                    char finalValue[100] = "";
+
+                    if (leftOperandEntry != NULL && strcmp(leftOperandEntry->type, TEXT_TYPE) == 0) {
+                        strcpy(finalValue, leftOperandEntry->value);
+                    } else {
+                        strcpy(finalValue, leftOperand);
+                    }
+
+                    // Retrieve the value of the right operand (if it's a variable)
+                    SymbolEntry* rightOperandEntry = lookupEntry(symbolTable, rightOperand);
+                    if (rightOperandEntry != NULL && strcmp(rightOperandEntry->type, TEXT_TYPE) == 0) {
+                        strcat(finalValue, rightOperandEntry->value);
+                    } else {
+                        strcat(finalValue, rightOperand);
+                    }
+
+                    // Perform string concatenation
+                    strcpy(entry->value, finalValue);
+                }else if (subOperator != NULL) {
+                    // String subtraction
+                    // Extract the minuend and subtrahend
                     char minuend[100] = "";
                     char subtrahend[100] = "";
                     strncpy(minuend, expression, subOperator - expression);
                     strcpy(subtrahend, subOperator + 1);
 
-                    // Remove leading and trailing whitespace from both strings
+                    // Remove leading and trailing whitespace from both operands
                     trim(minuend);
                     trim(subtrahend);
 
-                    // Perform the subtraction operation
+                    // Perform string subtraction
                     char* result = strstr(minuend, subtrahend);
                     if (result != NULL) {
-                        // Remove the Subtrahend from the Minuend
+                        // Remove the subtrahend from the minuend
                         strncpy(result, result + strlen(subtrahend), strlen(result + strlen(subtrahend)) + 1);
                         strcpy(entry->value, minuend);
                     } else {
-                        // Substring not found, assign only the Minuend
+                        // Substring not found, assign only the minuend
                         strcpy(entry->value, minuend);
                     }
+                } else {
+                    // Regular assignment with string constant or variable
+                    if (tokens[startIndex].type == STRING_CONSTANT) {
+                        // Regular assignment with string constant
+                        strcpy(entry->value, expression);
+                    } else if (tokens[startIndex].type == IDENTIFIER) {
+                        // Assignment with another text variable
+                        SymbolEntry* identifierEntry = lookupEntry(symbolTable, tokens[startIndex].lexeme);
+                        if (identifierEntry == NULL || strcmp(identifierEntry->type, TEXT_TYPE) != 0) {
+                            error("Invalid assignment to text variable. Expected string constant or text variable.");
+                        }
+                        strcpy(entry->value, identifierEntry->value);
+                    } else {
+                        error("Invalid assignment to text variable. Expected string constant or text variable.");
+                    }
                 }
+
                 printf("Assignment: %s := %s\n", identifier, entry->value);
-            }
-
-
-            else {
+            } else {
                 error("Invalid assignment to non-integer variable.");
             }
         } else {
@@ -226,6 +256,7 @@ void parseAssignment(Token* tokens, int* index, SymbolTable* symbolTable) {
         error("Expected identifier in assignment statement.");
     }
 }
+
 
 
 
@@ -381,7 +412,7 @@ void parseWriteStatement(Token* tokens, int* index, SymbolTable* symbolTable) {
 
 
 
-void parseSizeFunction(Token* tokens, int* index, SymbolTable* symbolTable) {
+int parseSizeFunction(Token* tokens, int* index, SymbolTable* symbolTable) {
     Token token = tokens[*index];
 
     if (strcmp(token.lexeme, "size") == 0) {

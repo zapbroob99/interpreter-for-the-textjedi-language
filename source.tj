@@ -1,4 +1,38 @@
-new int a;
-a:=3;
-a:=a-2;
-new text b;
+/* Test Case: Successful Scenarios */
+/* Test Case 1: Variable declaration and assignment */
+new text myText;
+new int myInt;
+myText := "Hello, world!";
+myInt := 42;
+output myText;
+
+/* Test Case 2: Arithmetic operations */
+new int x;
+new int y;
+new int z;
+x := 10 + 5;
+y := 20 - 8;
+z := x + y;
+
+/* Test Case 3: String concatenation */
+new text str1;
+new text str2;
+new text str3;
+str1 := "Hello";
+str2 := "World";
+str3 := str1 + str2;
+output str3;
+
+/* Test Case 4: String subtraction */
+new text Str;
+
+Str := "Hello world"-"wo";
+output Str;
+
+/* Test Case 6: File I/O */
+new text outputFile;
+new text temp;
+outputFile := "output.txt";
+input temp prompt "Enter Your Input:";
+write temp to outputFile;
+
